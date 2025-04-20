@@ -134,38 +134,106 @@
 // });
 
 // app.listen(PORT, () => console.log(`✅ Server on port ${PORT}`));
-const express = require("express");
-const cors = require("cors");
+// const express = require("express");
+// const cors = require("cors");
 
+// const app = express();
+// const PORT = process.env.PORT || 5000;
+
+// // In-memory visitor data (WILL RESET when server restarts)
+// const visitorData = [
+//   { name: "Sun", visitors: 0 },
+//   { name: "Mon", visitors: 0 },
+//   { name: "Tue", visitors: 0 },
+//   { name: "Wed", visitors: 0 },
+//   { name: "Thu", visitors: 0 },
+//   { name: "Fri", visitors: 0 },
+//   { name: "Sat", visitors: 0 },
+// ];
+
+// app.use(cors());
+// app.use(express.json());
+
+// // Get visitor data
+// app.get("/api/visitors-by-day", (req, res) => {
+//   res.json(visitorData);
+// });
+
+// // Increment today's visitor count
+// app.post("/api/visit", (req, res) => {
+//   const todayIndex = new Date().getDay();
+//   visitorData[todayIndex].visitors += 1;
+//   res.json({ success: true });
+// });
+
+// app.listen(PORT, () => {
+//   console.log(`✅ Server running on port ${PORT}`);
+// });
+// const express = require("express");
+// const cors = require("cors");
+
+// const app = express();
+// const PORT = process.env.PORT || 5000;
+
+// // In-memory visitor data
+// const visitorData = [
+//   { name: "Sun", visitors: 0 },
+//   { name: "Mon", visitors: 0 },
+//   { name: "Tue", visitors: 0 },
+//   { name: "Wed", visitors: 0 },
+//   { name: "Thu", visitors: 0 },
+//   { name: "Fri", visitors: 0 },
+//   { name: "Sat", visitors: 0 },
+// ];
+
+// app.use(cors());
+// app.use(express.json());
+
+// // API: Get visitor stats
+// app.get("/api/visitors-by-day", (req, res) => {
+//   res.json(visitorData);
+// });
+
+// // API: Track new visit
+// app.post("/api/visit", (req, res) => {
+//   const todayIndex = new Date().getDay();
+//   visitorData[todayIndex].visitors += 1;
+//   console.log("✅ Visitor counted for:", visitorData[todayIndex].name);
+//   res.json({ success: true });
+// });
+
+// app.listen(PORT, () => {
+//   console.log(`✅ Server running on port ${PORT}`);
+// });
+const express = require('express');
+const cors = require('cors');
+const db = require('./db');
 const app = express();
-const PORT = process.env.PORT || 5000;
-
-// In-memory visitor data (WILL RESET when server restarts)
-const visitorData = [
-  { name: "Sun", visitors: 0 },
-  { name: "Mon", visitors: 0 },
-  { name: "Tue", visitors: 0 },
-  { name: "Wed", visitors: 0 },
-  { name: "Thu", visitors: 0 },
-  { name: "Fri", visitors: 0 },
-  { name: "Sat", visitors: 0 },
-];
+const PORT = process.env.PORT || 3000;
 
 app.use(cors());
 app.use(express.json());
 
-// Get visitor data
-app.get("/api/visitors-by-day", (req, res) => {
-  res.json(visitorData);
+// Visitor tracking route
+app.post('/api/visit', (req, res) => {
+  const today = new Date().toISOString().split('T')[0];
+  const existing = db.prepare('SELECT * FROM visitors WHERE date = ?').get(today);
+
+  if (existing) {
+    db.prepare('UPDATE visitors SET count = count + 1 WHERE date = ?').run(today);
+  } else {
+    db.prepare('INSERT INTO visitors (date, count) VALUES (?, ?)').run(today, 1);
+  }
+
+  res.send({ success: true });
 });
 
-// Increment today's visitor count
-app.post("/api/visit", (req, res) => {
-  const todayIndex = new Date().getDay();
-  visitorData[todayIndex].visitors += 1;
-  res.json({ success: true });
-});
-
+// Get weekly visitor data
+app.get('/api/visitors', (req, res) => {
+    const visitors = db.prepare('SELECT date, count FROM visitors ORDER BY date').all();
+    res.json(visitors);
+  });
+  
 app.listen(PORT, () => {
   console.log(`✅ Server running on port ${PORT}`);
 });
