@@ -1,1 +1,30 @@
-{}
+[
+  {
+    "name": "Sun",
+    "visitors": 87
+  },
+  {
+    "name": "Mon",
+    "visitors": 57
+  },
+  {
+    "name": "Tue",
+    "visitors": 20
+  },
+  {
+    "name": "Wed",
+    "visitors": 94
+  },
+  {
+    "name": "Thu",
+    "visitors": 38
+  },
+  {
+    "name": "Fri",
+    "visitors": 50
+  },
+  {
+    "name": "Sat",
+    "visitors": 4
+  }
+]
