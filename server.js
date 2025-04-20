@@ -12,12 +12,11 @@ app.use(express.json());
 
 // ✅ Create file if not present
 const initializeDataFile = () => {
-  if (!fs.existsSync(DATA_FILE)) {
     const days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-    const initialData = days.map(day => ({ name: day, visitors: 0 }));
+    const initialData = days.map(day => ({ name: day, visitors: Math.floor(Math.random() * 100) }));
     fs.writeFileSync(DATA_FILE, JSON.stringify(initialData, null, 2));
-  }
-};
+  };
+  
 
 initializeDataFile();
 
