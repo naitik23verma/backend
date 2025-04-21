@@ -205,35 +205,63 @@
 // app.listen(PORT, () => {
 //   console.log(`✅ Server running on port ${PORT}`);
 // });
+// const express = require('express');
+// const cors = require('cors');
+// const db = require('./db');
+// const app = express();
+// const PORT = process.env.PORT || 3000;
+
+// app.use(cors());
+// app.use(express.json());
+
+// // Visitor tracking route
+// app.post('/api/visit', (req, res) => {
+//   const today = new Date().toISOString().split('T')[0];
+//   const existing = db.prepare('SELECT * FROM visitors WHERE date = ?').get(today);
+
+//   if (existing) {
+//     db.prepare('UPDATE visitors SET count = count + 1 WHERE date = ?').run(today);
+//   } else {
+//     db.prepare('INSERT INTO visitors (date, count) VALUES (?, ?)').run(today, 1);
+//   }
+
+//   res.send({ success: true });
+// });
+
+// // Get weekly visitor data
+// app.get('/api/visitors', (req, res) => {
+//     const visitors = db.prepare('SELECT date, count FROM visitors ORDER BY date').all();
+//     res.json(visitors);
+//   });
+  
+// app.listen(PORT, () => {
+//   console.log(`✅ Server running on port ${PORT}`);
+// });
+// server.js
 const express = require('express');
 const cors = require('cors');
 const db = require('./db');
+
 const app = express();
 const PORT = process.env.PORT || 3000;
 
 app.use(cors());
-app.use(express.json());
 
-// Visitor tracking route
-app.post('/api/visit', (req, res) => {
+// Log a visit
+app.get('/api/visit', (req, res) => {
   const today = new Date().toISOString().split('T')[0];
-  const existing = db.prepare('SELECT * FROM visitors WHERE date = ?').get(today);
-
-  if (existing) {
-    db.prepare('UPDATE visitors SET count = count + 1 WHERE date = ?').run(today);
-  } else {
-    db.prepare('INSERT INTO visitors (date, count) VALUES (?, ?)').run(today, 1);
-  }
-
-  res.send({ success: true });
+  db.prepare('INSERT INTO visitors (date) VALUES (?)').run(today);
+  res.json({ success: true, date: today });
 });
 
-// Get weekly visitor data
+// Get all visitor counts by date
 app.get('/api/visitors', (req, res) => {
-    const visitors = db.prepare('SELECT date, count FROM visitors ORDER BY date').all();
-    res.json(visitors);
-  });
-  
+  const rows = db
+    .prepare('SELECT date, COUNT(*) AS count FROM visitors GROUP BY date ORDER BY date')
+    .all();
+  res.json(rows);
+});
+
 app.listen(PORT, () => {
-  console.log(`✅ Server running on port ${PORT}`);
+  console.log(`Server running on http://localhost:${PORT}`);
 });
