@@ -238,30 +238,62 @@
 //   console.log(`✅ Server running on port ${PORT}`);
 // });
 // server.js
-const express = require('express');
-const cors = require('cors');
-const db = require('./db');
+// const express = require('express');
+// const cors = require('cors');
+// const db = require('./db');
+
+// const app = express();
+// const PORT = process.env.PORT || 3000;
+
+// app.use(cors());
+
+// // Log a visit
+// app.get('/api/visit', (req, res) => {
+//   const today = new Date().toISOString().split('T')[0];
+//   db.prepare('INSERT INTO visitors (date) VALUES (?)').run(today);
+//   res.json({ success: true, date: today });
+// });
+
+// // Get all visitor counts by date
+// app.get('/api/visitors', (req, res) => {
+//   const rows = db
+//     .prepare('SELECT date, COUNT(*) AS count FROM visitors GROUP BY date ORDER BY date')
+//     .all();
+//   res.json(rows);
+// });
+
+// app.listen(PORT, () => {
+//   console.log(`Server running on http://localhost:${PORT}`);
+// });
+const express = require("express");
+const cors = require("cors");
+const db = require("./db");
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
 app.use(cors());
+app.use(express.json());
 
-// Log a visit
-app.get('/api/visit', (req, res) => {
-  const today = new Date().toISOString().split('T')[0];
-  db.prepare('INSERT INTO visitors (date) VALUES (?)').run(today);
-  res.json({ success: true, date: today });
+// Record new visitor
+app.post("/api/visit", (req, res) => {
+  const today = new Date().toISOString().split("T")[0];
+  db.prepare("INSERT INTO visitors (date) VALUES (?)").run(today);
+  res.json({ message: "Visitor recorded" });
 });
 
-// Get all visitor counts by date
-app.get('/api/visitors', (req, res) => {
-  const rows = db
-    .prepare('SELECT date, COUNT(*) AS count FROM visitors GROUP BY date ORDER BY date')
-    .all();
-  res.json(rows);
+// Get weekly visitor counts
+app.get("/api/weekly-visits", (req, res) => {
+  const data = db.prepare(`
+    SELECT date, COUNT(*) as count
+    FROM visitors
+    WHERE date >= date('now', '-6 days')
+    GROUP BY date
+  `).all();
+
+  res.json(data);
 });
 
 app.listen(PORT, () => {
-  console.log(`Server running on http://localhost:${PORT}`);
+  console.log(`Server running on port ${PORT}`);
 });
