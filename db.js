@@ -40,21 +40,21 @@
 // db.js
 // db.js
 // db.js
-const { Client } = require("pg");
+const { Client } = require('pg');
 
 const client = new Client({
-  connectionString: process.env.DATABASE_URL,  // Your connection string from Render
+  connectionString: process.env.DATABASE_URL,  // From your .env file
   ssl: {
-    rejectUnauthorized: false, // Allow SSL connection
+    rejectUnauthorized: false,  // Allow connections even if SSL certificate is not verified
   },
 });
 
 client.connect()
   .then(() => {
-    console.log("Connected to the database");
+    console.log('Connected to the database');
   })
   .catch((err) => {
-    console.error("Database connection error:", err);
+    console.error('Database connection error:', err);
   });
 
 module.exports = client;
