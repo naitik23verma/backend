@@ -40,21 +40,17 @@
 // db.js
 // db.js
 // db.js
-const { Client } = require('pg');
+const { Client } = require("pg");
 
 const client = new Client({
-  connectionString: process.env.DATABASE_URL,  // From your .env file
+  connectionString: process.env.DATABASE_URL,
   ssl: {
-    rejectUnauthorized: false,  // Allow connections even if SSL certificate is not verified
+    rejectUnauthorized: false, // Important for Render
   },
 });
 
 client.connect()
-  .then(() => {
-    console.log('Connected to the database');
-  })
-  .catch((err) => {
-    console.error('Database connection error:', err);
-  });
+  .then(() => console.log("Connected to PostgreSQL"))
+  .catch((err) => console.error("Database connection error:", err));
 
 module.exports = client;
