@@ -265,9 +265,112 @@
 // app.listen(PORT, () => {
 //   console.log(`Server running on http://localhost:${PORT}`);
 // });
-const express = require("express");
-const cors = require("cors");
-const db = require("./db");
+// const express = require("express");
+// const cors = require("cors");
+// const db = require("./db");
+
+// const app = express();
+// const PORT = process.env.PORT || 3000;
+
+// app.use(cors());
+// app.use(express.json());
+
+// // Record new visitor
+// app.post("/api/visit", (req, res) => {
+//   const today = new Date().toISOString().split("T")[0];
+//   db.prepare("INSERT INTO visitors (date) VALUES (?)").run(today);
+//   res.json({ message: "Visitor recorded" });
+// });
+
+// // Get weekly visitor counts
+// app.get("/api/weekly-visits", (req, res) => {
+//   const data = db.prepare(`
+//     SELECT date, COUNT(*) as count
+//     FROM visitors
+//     WHERE date >= date('now', '-6 days')
+//     GROUP BY date
+//   `).all();
+
+//   res.json(data);
+// });
+
+// app.listen(PORT, () => {
+//   console.log(`Server running on port ${PORT}`);
+// });
+// Import required dependencies
+// const express = require('express');
+// const cors = require('cors');
+// const bodyParser = require('body-parser');
+
+// // Create an instance of Express
+// const app = express();
+
+// // Middleware
+// app.use(cors()); // Allow cross-origin requests
+// app.use(bodyParser.json()); // Parse incoming JSON requests
+
+// // Define routes
+// app.get('/', (req, res) => {
+//   res.send('Hello, welcome to the server!');
+// });
+
+// // Example: Route for tracking visitors
+// app.post('/track-visitor', (req, res) => {
+//   const { visitorInfo } = req.body;
+//   console.log('Visitor Data:', visitorInfo);
+//   res.status(200).send('Visitor tracked!');
+// });
+
+// // Start server
+// const PORT = process.env.PORT || 5000;
+// app.listen(PORT, () => {
+//   console.log(`Server is running on port ${PORT}`);
+// });
+// server.js
+// const express = require('express');
+// const app = express();
+// const sqlite3 = require('sqlite3');
+// const path = require('path');
+
+// // Initialize SQLite database
+// const db = new sqlite3.Database('./data/visitors.db');
+
+// // Serve static files
+// app.use(express.static(path.join(__dirname, 'public')));
+
+// // Middleware to parse JSON bodies
+// app.use(express.json());
+
+// // Route to track visits
+// app.post('/api/visit', (req, res) => {
+//   const date = new Date().toISOString().split('T')[0];  // Get the current date (YYYY-MM-DD)
+
+//   db.run('INSERT INTO visits (date) VALUES (?)', [date], function (err) {
+//     if (err) {
+//       return res.status(500).json({ success: false, error: err.message });
+//     }
+//     res.json({ success: true, date });
+//   });
+// });
+
+// // Route to get all visitor data
+// app.get('/api/visitors', (req, res) => {
+//   db.all('SELECT date, COUNT(*) as count FROM visits GROUP BY date ORDER BY date DESC', (err, rows) => {
+//     if (err) {
+//       return res.status(500).json({ success: false, error: err.message });
+//     }
+//     res.json(rows);
+//   });
+// });
+
+// // Start the server
+// const PORT = process.env.PORT || 3000;
+// app.listen(PORT, () => {
+//   console.log(`Server is running on port ${PORT}`);
+// });
+const express = require('express');
+const cors = require('cors');
+const db = require('./db');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -275,23 +378,41 @@ const PORT = process.env.PORT || 3000;
 app.use(cors());
 app.use(express.json());
 
-// Record new visitor
-app.post("/api/visit", (req, res) => {
-  const today = new Date().toISOString().split("T")[0];
-  db.prepare("INSERT INTO visitors (date) VALUES (?)").run(today);
-  res.json({ message: "Visitor recorded" });
+// Record a visit
+app.post('/api/visit', (req, res) => {
+  const date = new Date().toISOString().split('T')[0]; // Format: YYYY-MM-DD
+
+  db.run('INSERT INTO visits (date) VALUES (?)', [date], function (err) {
+    if (err) {
+      console.error('Error inserting visit:', err);
+      return res.status(500).json({ error: 'Failed to record visit' });
+    }
+    res.json({ message: 'Visit recorded', id: this.lastID });
+  });
 });
 
-// Get weekly visitor counts
-app.get("/api/weekly-visits", (req, res) => {
-  const data = db.prepare(`
-    SELECT date, COUNT(*) as count
-    FROM visitors
-    WHERE date >= date('now', '-6 days')
-    GROUP BY date
-  `).all();
+// Get weekly visitors
+app.get('/api/visitors', (req, res) => {
+  db.all(
+    `SELECT date, COUNT(*) as count 
+     FROM visits 
+     GROUP BY date 
+     ORDER BY date DESC 
+     LIMIT 7`,
+    (err, rows) => {
+      if (err) {
+        console.error('Error fetching visitors:', err);
+        return res.status(500).json({ error: 'Failed to fetch visitors' });
+      }
 
-  res.json(data);
+      const visitors = rows.reverse().map((row) => ({
+        day: row.date,
+        count: row.count,
+      }));
+
+      res.json(visitors);
+    }
+  );
 });
 
 app.listen(PORT, () => {
