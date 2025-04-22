@@ -40,13 +40,19 @@
 // db.js
 // db.js
 // db.js
-const { Pool } = require("pg");
+const { Client } = require('pg');
 
-const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
-  ssl: {
-    rejectUnauthorized: false,
-  },
+// Database connection setup using the .env file for DATABASE_URL
+const client = new Client({
+  connectionString: process.env.DATABASE_URL, // Use the DATABASE_URL from the .env file
 });
 
-module.exports = pool;
+client.connect()
+  .then(() => {
+    console.log('Connected to PostgreSQL database');
+  })
+  .catch((err) => {
+    console.error('Database connection error:', err.stack);
+  });
+
+module.exports = client;
