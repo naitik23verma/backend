@@ -38,42 +38,15 @@
 
 // module.exports = db;
 // db.js
-const sqlite3 = require('sqlite3').verbose();
-const fs     = require('fs');
-const path   = require('path');
+// db.js
+// db.js
+const { Pool } = require("pg");
 
-// Detect environment
-const isProd = process.env.NODE_ENV === 'production';
-
-// Decide where to store the DB
-const dir = isProd
-  ? '/data'                                  // Render’s mounted disk
-  : path.resolve(__dirname, 'data');         // ./data folder in your project
-
-// Make sure the directory exists
-if (!fs.existsSync(dir)) {
-  fs.mkdirSync(dir, { recursive: true });
-}
-
-// Full path to the DB file
-const dbPath = path.join(dir, 'visitors.db');
-
-console.log(`Opening database at ${dbPath}`);
-
-// Open (or create) the SQLite database
-const db = new sqlite3.Database(dbPath, (err) => {
-  if (err) {
-    console.error('Failed to open DB:', err);
-    process.exit(1);
-  }
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL,
+  ssl: {
+    rejectUnauthorized: false,
+  },
 });
 
-// Create table if it doesn’t exist
-db.run(`
-  CREATE TABLE IF NOT EXISTS visits (
-    id   INTEGER PRIMARY KEY AUTOINCREMENT,
-    date TEXT    NOT NULL
-  )
-`);
-
-module.exports = db;
+module.exports = pool;
